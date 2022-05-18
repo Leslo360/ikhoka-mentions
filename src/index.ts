@@ -11,13 +11,15 @@ class genReport {
   );
   metrics = {
     MOVER_MENTION: (line: String) =>
-      /mover/.test(line.toLowerCase()) && 'MOVER MENTION',
+      /mover/.test(line.toLowerCase()) && (this.MOVER_MENTION_COUNT += 1),
     SHAKER_MENTION: (line: String) =>
-      /shaker/.test(line.toLowerCase()) && 'SHAKER MENTION',
-    SHORT_COMMENT: (line: String) => line.length < 15 && 'SHORTER THAN 15',
+      /shaker/.test(line.toLowerCase()) && (this.SHAKER_MENTION_COUNT += 1),
+    SHORT_COMMENT: (line: String) =>
+      line.length < 15 && (this.SHORT_COMMENT_COUNT += 1),
     SPAM: (line: String) =>
-      this.URL_regex.test(line.toLowerCase()) && 'SPAM : URL DETECTED',
-    QUESTIONS: (line: String) => line.toLowerCase().includes('?') && 'QUESTION',
+      this.URL_regex.test(line.toLowerCase()) && (this.SPAM_COUNT += 1),
+    QUESTIONS: (line: String) =>
+      line.toLowerCase().includes('?') && (this.QUESTIONS_COUNT += 1),
   };
   constructor(d: string) {
     this.docs = d;
@@ -49,35 +51,18 @@ class genReport {
     [comments].map(line => {
       line.map(mention => {
         Object.values(this.metrics).map(validate => {
-          switch (validate(mention)) {
-            case 'MOVER MENTION':
-              this.MOVER_MENTION_COUNT += 1;
-              break;
-            case 'SHAKER MENTION':
-              this.SHAKER_MENTION_COUNT += 1;
-              break;
-            case 'SHORTER THAN 15':
-              this.SHORT_COMMENT_COUNT += 1;
-              break;
-            case 'SPAM : URL DETECTED':
-              this.SPAM_COUNT += 1;
-              break;
-            case 'QUESTION':
-              this.QUESTIONS_COUNT += 1;
-              break;
-            default:
-              break;
-          }
+          validate(mention);
         });
       });
     });
-    console.log(`\nTotal Mover Mentions : ${this.MOVER_MENTION_COUNT}`);
-    console.log(`Total Shaker Mentions : ${this.SHAKER_MENTION_COUNT}`);
-    console.log(
-      `Total Mentions Shorther than 15 characters: ${this.SHORT_COMMENT_COUNT}`
-    );
-    console.log(`Total Spam Mentions : ${this.SPAM_COUNT}`);
-    console.log(`Total Questions in Mentions : ${this.QUESTIONS_COUNT} \n`);
+    const report = {
+      'Total Mover Mentions': this.MOVER_MENTION_COUNT,
+      'Total Shaker Mentions': this.SHAKER_MENTION_COUNT,
+      'Total Mentions Shorther than 15 characters': this.SHORT_COMMENT_COUNT,
+      'Total Spam Mentions': this.SPAM_COUNT,
+      'Total Questions in Mentions': this.QUESTIONS_COUNT,
+    };
+    console.log(report);
   }
 }
 const report = new genReport('./docs');
